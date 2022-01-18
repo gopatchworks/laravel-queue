@@ -127,6 +127,10 @@ class Worker extends \Illuminate\Queue\Worker implements
 
     public function onMessageReceived(MessageReceived $context): void
     {
+        if ($context->getAckOnMessageRecieve()) {
+            ($context->getConsumer())->acknowledge($context->getMessage());
+        }
+        
         $this->job = $this->queue->convertMessageToJob(
             $context->getMessage(),
             $context->getConsumer()
