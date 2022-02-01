@@ -1,6 +1,7 @@
 <?php
 namespace Enqueue\LaravelQueue;
 
+use Illuminate\Support\Facades\Config;
 use Enqueue\Consumption\ChainExtension;
 use Enqueue\Consumption\Context\MessageReceived;
 use Enqueue\Consumption\Context\MessageResult;
@@ -127,10 +128,11 @@ class Worker extends \Illuminate\Queue\Worker implements
 
     public function onMessageReceived(MessageReceived $context): void
     {
-        if ($context->getAckOnMessageRecieve()) {
+        if (!Config::has('queue.connections.interop.acknowledge_on_receive')
+            || Config::get('queue.connections.interop.acknowledge_on_receive') === false) {
             ($context->getConsumer())->acknowledge($context->getMessage());
         }
-        
+
         $this->job = $this->queue->convertMessageToJob(
             $context->getMessage(),
             $context->getConsumer()

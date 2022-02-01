@@ -2,6 +2,7 @@
 
 namespace Enqueue\LaravelQueue;
 
+use Illuminate\Support\Facades\Config;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Queue\Job as JobContract;
 use Illuminate\Queue\Jobs\Job as BaseJob;
@@ -48,7 +49,10 @@ class Job extends BaseJob implements JobContract
     {
         parent::delete();
 
-        $this->consumer->acknowledge($this->message);
+        if (!Config::has('queue.connections.interop.acknowledge_on_receive')
+            || Config::get('queue.connections.interop.acknowledge_on_receive') === false) {
+            $this->consumer->acknowledge($this->message);
+        }
     }
 
     /**
@@ -60,7 +64,7 @@ class Job extends BaseJob implements JobContract
 
         $requeueMessage = clone $this->message;
         $requeueMessage->setProperty('x-attempts', $this->attempts() + 1);
-        
+
         $producer = $this->context->createProducer();
 
         try {
@@ -68,7 +72,10 @@ class Job extends BaseJob implements JobContract
         } catch (DeliveryDelayNotSupportedException $e) {
         }
 
-        $this->consumer->acknowledge($this->message);
+        if (!Config::has('queue.connections.interop.acknowledge_on_receive')
+            || Config::get('queue.connections.interop.acknowledge_on_receive') === false) {
+            $this->consumer->acknowledge($this->message);
+        }
         $producer->send($this->consumer->getQueue(), $requeueMessage);
     }
 
