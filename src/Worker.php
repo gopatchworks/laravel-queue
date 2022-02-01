@@ -128,8 +128,8 @@ class Worker extends \Illuminate\Queue\Worker implements
 
     public function onMessageReceived(MessageReceived $context): void
     {
-        if (!Config::has('queue.connections.interop.acknowledge_on_receive')
-            || Config::get('queue.connections.interop.acknowledge_on_receive') === true) {
+        if (Config::has('queue.connections.interop.acknowledge_on_receive')
+            && Config::get('queue.connections.interop.acknowledge_on_receive') === true) {
             ($context->getConsumer())->acknowledge($context->getMessage());
         }
 
