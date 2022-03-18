@@ -17,6 +17,7 @@ use Enqueue\Consumption\QueueConsumer;
 use Enqueue\Consumption\Result;
 use Enqueue\Consumption\StartExtensionInterface;
 use Illuminate\Queue\WorkerOptions;
+use Throwable;
 
 class Worker extends \Illuminate\Queue\Worker implements
     StartExtensionInterface,
@@ -168,6 +169,27 @@ class Worker extends \Illuminate\Queue\Worker implements
         }
 
         parent::stop($status);
+    }
+
+    /**
+     * Handle an exception that occurred while the job was running.
+     *
+     * @param  string  $connectionName
+     * @param  \Illuminate\Contracts\Queue\Job  $job
+     * @param  \Illuminate\Queue\WorkerOptions  $options
+     * @param  \Throwable  $e
+     * @return void
+     *
+     * @throws \Throwable
+     */
+    protected function handleJobException($connectionName, $job, WorkerOptions $options, Throwable $e)
+    {
+        // if we do not fail job it will be re-queued potentially inifinately
+        if (Config::get('queue.connections.interop.fail_job_on_exception') === true) {
+            $job->fail($e);
+        }
+
+        parent::handleJobException($connectionName, $job, $options, $e);
     }
 }
 
