@@ -182,7 +182,7 @@ class Worker extends \Illuminate\Queue\Worker implements
      *
      * @throws \Throwable
      */
-    protected function handleJobException($connectionName, $job, WorkerOptions $options, Throwable $e)
+    protected function handleJobException($connectionName, $job, WorkerOptions $options, $e)
     {
         // if we do not fail job it will be re-queued potentially inifinately
         if (Config::get('queue.connections.interop.fail_job_on_exception') === true) {
